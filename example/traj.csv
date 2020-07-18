@@ -1,0 +1,5 @@
+index;id;geom
+0;1;LineString(20 50,40 50)
+0;1;LineString(30 60,50 50)
+1;2;LineString(10 50,40 50,30 50,90 50)
+2;3;LineString(100 50,50 20,50 40,50 30)
