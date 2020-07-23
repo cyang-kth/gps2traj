@@ -298,7 +298,7 @@ void write_traj_data(std::ofstream &ofs, OutputConfig &config,
     // Iterate current and next point
     int N = traj.geom.size();
     int start_idx = 0;
-    int end_idx = 1;
+    int end_idx = 0;
     for (int i=0; i<N-1; ++i) {
       end_idx = i+1;
       double time_diff = traj.geom[i+1].timestamp-traj.geom[i].timestamp;
