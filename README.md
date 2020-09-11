@@ -32,6 +32,46 @@ Test on a CSV file with 30 million rows takes about 84.797 seconds.
 - `--dist_gap`: distance gap to split too long trajectories (default 1e9)
 - `--ofields`: output fields (ts,tend,timestamp) separated by , (default "")
 
+#### Run example
+
+```bash
+cd example
+gps2traj -i gps.csv -o traj.csv --time_gap 10
+gps2traj -i gps_semicolon.csv -o traj.csv --time_gap 10 -d ';'
+gps2traj -i gps_no_header.csv -o traj_timestamp.csv --time_gap 10 --no_header --id 0 -x 2 -y 3 -t 1 --ofields ts,tend,timestamp
+```
+
+### traj2gps
+
+This tool transform a trajectory with linestring geometry into points.
+
+```
+# Input
+id;geom
+1;LineString(1 1,0 1,0 0)
+
+# Output
+id;point_idx;x;y
+1;0;1;1
+1;1;0;1
+1;2;0;0
+```
+
+#### Usage of traj2gps
+
+- `-i/--input`: input file
+- `-o/--output`: output file
+- `-d/--delim`: field delimiter character (default `;`)
+- `--id`: id column name (default `id`)
+- `-g/--geom`: geom column name or index (default `geom`)
+- `--no_header`: if specified, traj file contains no header
+
+#### Run example
+
+```bash
+cd example
+traj2gps -i traj_input.csv -o gps_output.csv
+```
 
 #### Build and install
 
@@ -44,14 +84,6 @@ make install
 
 You may need root permission to run the second command `sudo make install`
 
-#### Run example
-
-```
-cd example
-gps2traj -i gps.csv -o traj.csv --time_gap 10
-gps2traj -i gps_semicolon.csv -o traj.csv --time_gap 10 -d ';'
-gps2traj -i gps_no_header.csv -o traj_timestamp.csv --time_gap 10 --no_header --id 0 -x 2 -y 3 -t 1 --ofields ts,tend,timestamp
-```
 
 #### Dependency
 
