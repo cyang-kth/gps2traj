@@ -178,6 +178,7 @@ void traj2gps(InputConfig &config){
     read_header_config(config);
   }
   std::ofstream ofs(config.output_file);
+  ofs.precision(12);
   ofs << "id;point_idx;x;y\n";
   long long progress = 0;
   // Ensure that the data is sorted in ascending order by time
