@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <cmath>
+#include <ctime>
 #include <sys/stat.h>
 #include <getopt.h>
 #include <chrono>
@@ -21,6 +22,21 @@ struct Point {
   double x;
   double y;
   double timestamp;
+};
+
+double string2timestamp(const std::string &intermediate,
+  int tag){
+  if (tag == 0){
+    // double value as timestamp
+    return std::stod(intermediate);
+  } else if (tag==1) {
+    // 2020-01-01T00:00:27
+    std::tm tm = {};
+    strptime(intermediate.c_str(), "%Y-%m-%dT%H:%M:%S", &tm);
+    // std::cout<<"Debug "<< intermediate << "" << std::mktime(&tm) <<"\n";
+    return std::mktime(&tm);
+  }
+  return 0;
 };
 
 bool point_comp(Point &p1,Point &p2) {
@@ -52,6 +68,7 @@ struct InputConfig {
   int timestamp_idx;
   char delim;
   bool header;
+  int time_format;
 };
 
 struct OutputConfig {
@@ -59,6 +76,8 @@ struct OutputConfig {
   bool write_tend=false;
   bool write_timestamp=false;
 };
+
+
 
 void parse_ofields(OutputConfig &config, const std::string &str){
   char delim = ',';
@@ -193,7 +212,7 @@ void read_row_to_point(long long row_index, std::string &row,
     }
     if (index == config.timestamp_idx) {
       // std::cout<<"Timestamp "<< intermediate << "\n";
-      p.timestamp = std::stod(intermediate);
+      p.timestamp = string2timestamp(intermediate,config.time_format);
       timestamp_parsed = true;
     }
     ++index;
@@ -340,6 +359,7 @@ void print_help(){
   std::cout<<"-x/--x: x column name or index (x by default)\n";
   std::cout<<"-y/--y: y column name or index (y by default)\n";
   std::cout<<"-t/--time: time column name or index (timestamp by default)\n";
+  std::cout<<"-f/--tf: time format(0 for int, 1 for 2020-01-01T00:00:27)\n";
   std::cout<<"--time_gap: time gap to split long trajectory \n";
   std::cout<<"--dist_gap: dist gap to split long trajectory \n";
   std::cout<<"--no_header: if specified, gps file contains no header\n";
@@ -365,6 +385,7 @@ int main(int argc, char**argv){
   int opt;
   double dist_gap=1e9;
   double time_gap=1e9;
+  int time_format = 0;
   // The last element of the array has to be filled with zeros.
   static struct option long_options[] =
   {
@@ -375,6 +396,7 @@ int main(int argc, char**argv){
     {"x",   required_argument,0,'x' },
     {"y",   required_argument,0,'y' },
     {"time",   required_argument,0,'t' },
+    {"tf",   required_argument,0, 'f'},
     {"time_gap",   required_argument,0, 0},
     {"ofields",   required_argument,0, 0},
     {"dist_gap",   required_argument,0, 0},
@@ -383,7 +405,7 @@ int main(int argc, char**argv){
     {0,         0,                 0,  0 }
   };
   int long_index =0;
-  while ((opt = getopt_long(argc, argv,"i:o:d:0:t:x:y:h",
+  while ((opt = getopt_long(argc, argv,"i:o:d:0:t:x:y:f:h",
                             long_options, &long_index )) != -1)
   {
     switch (opt)
@@ -405,6 +427,9 @@ int main(int argc, char**argv){
       break;
     case 't':
       timestamp_name = std::string(optarg);
+      break;
+    case 'f':
+      time_format = std::stoi(optarg);
       break;
     case 'h':
       print_help();
@@ -445,6 +470,7 @@ int main(int argc, char**argv){
   std::cout<<"    y column name: "<<y_name<<"\n";
   std::cout<<"    time column name: "<<timestamp_name<<"\n";
   std::cout<<"    column delimter: "<< delim <<"\n";
+  std::cout<<"    time format: "<< time_format <<"\n";
   std::cout<<"    header: "<< (header?"true":"false") <<"\n";
   std::cout<<"    ofields: "<< output_fields <<"\n";
   std::cout<<"    time gap: "<< time_gap <<"\n";
@@ -455,7 +481,7 @@ int main(int argc, char**argv){
   DataStore ds;
   TrajIDMap id_map;
   InputConfig input_config{
-    id_name,x_name,y_name,timestamp_name,-1,-1,-1,-1,delim, header
+    id_name,x_name,y_name,timestamp_name,-1,-1,-1,-1,delim, header, time_format
   };
   OutputConfig output_config;
   parse_ofields(output_config, output_fields);
