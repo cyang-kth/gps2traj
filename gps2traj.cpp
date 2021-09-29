@@ -39,6 +39,21 @@ double string2timestamp(const std::string &intermediate,
   return 0;
 };
 
+double string2timestamp(const std::string &intermediate,
+  const std::string &format){
+  if (format.empty()){
+    // double value as timestamp
+    return std::stod(intermediate);
+  } else {
+    // 2020-01-01T00:00:27
+    std::tm tm = {};
+    strptime(intermediate.c_str(),format.c_str(), &tm);
+    // std::cout<<"Debug "<< intermediate << "" << std::mktime(&tm) <<"\n";
+    return std::mktime(&tm);
+  }
+  return 0;
+};
+
 bool point_comp(Point &p1,Point &p2) {
   return (p1.timestamp<p2.timestamp);
 };
@@ -68,7 +83,7 @@ struct InputConfig {
   int timestamp_idx;
   char delim;
   bool header;
-  int time_format;
+  std::string time_format;
 };
 
 struct OutputConfig {
@@ -303,7 +318,7 @@ void write_traj_data(std::ofstream &ofs, OutputConfig &config,
     ofs<<";tend";
   }
   if (config.write_timestamp){
-    ofs<<";timestamps";
+    ofs<<";timestamp";
   }
   ofs<<"\n";
   long long progress = 0;
@@ -363,7 +378,7 @@ void print_help(){
   std::cout<<"--time_gap: time gap to split long trajectory \n";
   std::cout<<"--dist_gap: dist gap to split long trajectory \n";
   std::cout<<"--no_header: if specified, gps file contains no header\n";
-  std::cout<<"--ofields: output fields (ts,tend,timestamp) separated by ,\n";
+  std::cout<<"--ofields: output fields (ts,tend,timestamp) separated by , default no output fields\n";
   std::cout<<"-h/--help: print help information\n";
 };
 
@@ -385,7 +400,8 @@ int main(int argc, char**argv){
   int opt;
   double dist_gap=1e9;
   double time_gap=1e9;
-  int time_format = 0;
+  // int time_format = 0;
+  std::string time_format="";
   // The last element of the array has to be filled with zeros.
   static struct option long_options[] =
   {
@@ -429,7 +445,7 @@ int main(int argc, char**argv){
       timestamp_name = std::string(optarg);
       break;
     case 'f':
-      time_format = std::stoi(optarg);
+      time_format = std::string(optarg);
       break;
     case 'h':
       print_help();
@@ -469,8 +485,8 @@ int main(int argc, char**argv){
   std::cout<<"    x column name: "<<x_name<<"\n";
   std::cout<<"    y column name: "<<y_name<<"\n";
   std::cout<<"    time column name: "<<timestamp_name<<"\n";
+  std::cout<<"    time format : "<<time_format<<"\n";
   std::cout<<"    column delimter: "<< delim <<"\n";
-  std::cout<<"    time format: "<< time_format <<"\n";
   std::cout<<"    header: "<< (header?"true":"false") <<"\n";
   std::cout<<"    ofields: "<< output_fields <<"\n";
   std::cout<<"    time gap: "<< time_gap <<"\n";

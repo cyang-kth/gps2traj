@@ -27,10 +27,13 @@ Test on a CSV file with 30 million rows takes about 84.797 seconds.
 - `-x/--x`: x column name or index (default `x`)
 - `-y/--y`: y column name or index (default `y`)
 - `-t/--time`: timestamp column name or index (default `timestamp`)
+- `-f/--tf`: timestamp format (default Unix timestamp, can be specified as strftime template)
 - `--no_header`: if specified, gps file contains no header
 - `--time_gap`: time gap to split too long trajectories (default 1e9)
 - `--dist_gap`: distance gap to split too long trajectories (default 1e9)
 - `--ofields`: output fields (ts,tend,timestamp) separated by , (default "")
+
+https://en.cppreference.com/w/cpp/chrono/c/strftime
 
 #### Run example
 
@@ -39,6 +42,7 @@ cd example
 gps2traj -i gps.csv -o traj.csv --time_gap 10
 gps2traj -i gps_semicolon.csv -o traj.csv --time_gap 10 -d ';'
 gps2traj -i gps_no_header.csv -o traj_timestamp.csv --time_gap 10 --no_header --id 0 -x 2 -y 3 -t 1 --ofields ts,tend,timestamp
+gps2traj -i gps_timestamp_format.csv -x lng -y lat -f "%Y-%m-%d %H:%M:%S" --ofields timestamp -o traj_format.csv
 ```
 
 ### traj2gps
